@@ -1,0 +1,10 @@
+8.8.8.8
+1.1.1.1
+google.com
+cloudflare.com
+citrix.com
+github.com
+microsoft.com
+apple.com
+amazon.com
+facebook.com
