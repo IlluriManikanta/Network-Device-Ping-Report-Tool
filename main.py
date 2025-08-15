@@ -43,6 +43,10 @@ def read_targets(path: str) -> List[str]:
                 continue
             if stripped.startswith("#"):
                 continue
+            if "#" in stripped:
+                stripped = stripped.split('#', 1)[0].strip()
+            if not stripped:
+                continue
             targets.append(stripped)
         return targets
 
@@ -116,7 +120,7 @@ def build_ping_command(host: str, count: int, timeout_s: int) -> tuple[list[str]
         
     else:
         # count = 4
-        cmd = ["ping", "-c", str(count), "-W", str(timeout_s), host]
+        cmd = ["ping", "-c", str(count), host]
 
     return (cmd, flavor)
 
@@ -165,8 +169,7 @@ def parse_ping_output(text: str, flavor: str) -> Dict[str, Any]:
     #   'Minimum = 10ms, Maximum = 30ms, Average = 20ms'
 
     import re
-
-    UNIX_PACKETS_PATTERN = r"(\d+)\s+packets transmitted,\s+(\d+)\s+received.*?(\d+)%\s+packet loss"
+    UNIX_PACKETS_PATTERN = r"(\d+)\s+packets transmitted,\s+(\d+)\s+(?:packets\s+)?received.*?([0-9.]+)%\s+packet loss"
     UNIX_RTT_PATTERN = r"=\s*([0-9.]+)/([0-9.]+)/([0-9.]+)/([0-9.]+)\s*ms"
 
     WINDOWS_PACKETS_PATTERN = r"Sent\s*=\s*(\d+),\s*Received\s*=\s*(\d+),\s*Lost\s*=\s*\d+\s*\((\d+)%\s*loss\)"

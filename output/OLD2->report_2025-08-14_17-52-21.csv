@@ -1,0 +1,21 @@
+timestamp,host,resolved_ip,reachable,packets_sent,packets_received,packet_loss_pct,avg_ms,min_ms,max_ms
+2025-08-14T17:52:18,8.8.8.8                # Google DNS (reachable),,False,,,,37.953,34.061,46.773
+2025-08-14T17:52:21,1.1.1.1                # Cloudflare DNS (reachable),,False,,,,36.721,35.413,39.293
+2025-08-14T17:52:21,google.com             # Google (reachable),,False,,,,,,
+2025-08-14T17:52:21,cloudflare.com         # Cloudflare (reachable),,False,,,,,,
+2025-08-14T17:52:21,citrix.com             # Citrix (reachable),,False,,,,,,
+2025-08-14T17:52:21,github.com             # GitHub (reachable),,False,,,,,,
+2025-08-14T17:52:21,microsoft.com          # Microsoft (reachable),,False,,,,,,
+2025-08-14T17:52:21,apple.com              # Apple (reachable),,False,,,,,,
+2025-08-14T17:52:21,amazon.com             # Amazon (reachable),,False,,,,,,
+2025-08-14T17:52:21,facebook.com           # Facebook (reachable),,False,,,,,,
+2025-08-14T17:52:21,openai.com             # OpenAI (reachable),,False,,,,,,
+2025-08-14T17:52:21,netflix.com            # Netflix (reachable),,False,,,,,,
+2025-08-14T17:52:21,yahoo.com              # Yahoo (reachable),,False,,,,,,
+2025-08-14T17:52:21,duckduckgo.com         # DuckDuckGo (reachable),,False,,,,,,
+2025-08-14T17:52:21,reddit.com             # Reddit (reachable),,False,,,,,,
+2025-08-14T17:52:21,example.nonexistent    # Invalid domain (unreachable),,False,,,,,,
+2025-08-14T17:52:21,no-such-domain.test    # Reserved TLD (unreachable),,False,,,,,,
+2025-08-14T17:52:21,usps.com               # Often blocks ICMP ping (unreachable),,False,,,,,,
+2025-08-14T17:52:21,akamai.com             # Often blocks ICMP ping (unreachable),,False,,,,,,
+2025-08-14T17:52:21,"bankofamerica.com      # Financial site, ICMP usually blocked (unreachable)",,False,,,,,,
