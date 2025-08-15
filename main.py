@@ -137,10 +137,10 @@ def run_command(cmd: list, overall_timeout_s: int) -> tuple[int, str]:
         if not isinstance(cmd, list):
             return 126, "BAD_CMD_TYPE"
     
-        for item in cmd: 
-            if not isinstance(cmd, str):
-                return 126, "BAD_CMD_ELEM"
-            
+  
+        if not all(isinstance(item), str) for item in cmd):
+            return 126, "BAD_CMD_ELEM"
+        
 
         result =  subprocess.run(cmd, capture_output=True, text=True, timeout=overall_timeout_s)
 
@@ -179,7 +179,7 @@ def parse_ping_output(text: str, flavor: str) -> Dict[str, Any]:
 
     UNIX_PACKETS_PATTERN = r"(\d+)\s+packets transmitted,\s+(\d+)\s+received.*?(\d+)%\s+packet loss"
     UNIX_RTT_PATTERN = r"=\s*([0-9.]+)/([0-9.]+)/([0-9.]+)/([0-9.]+)\s*ms"
-    
+
     WINDOWS_PACKETS_PATTERN = r"Sent\s*=\s*(\d+),\s*Received\s*=\s*(\d+),\s*Lost\s*=\s*\d+\s*\((\d+)%\s*loss\)"
     WINDOWS_TIMES_PATTERN = r"Minimum\s*=\s*(\d+)ms,\s*Maximum\s*=\s*(\d+)ms,\s*Average\s*=\s*(\d+)ms"
 
@@ -261,10 +261,11 @@ def main() -> None:
     rows: List[Dict[str, Any]] = []
     for host in targets:
         ip = resolve_ip(host)  # M2
-        cmd = build_ping_command(host, PING_COUNT, PING_TIMEOUT_S)  # M3 (placeholder)
-        rc, out = run_command(cmd, overall_timeout_s=PING_TIMEOUT_S * (PING_COUNT + 1))  # M4
-        # For now, assume 'unix' flavor; later, move logic into ping_utils and detect flavor properly.
-        metrics = parse_ping_output(out, flavor="unix")  # M5
+        cmd, flavor = build_ping_command(host, PING_COUNT, PING_TIMEOUT_S)
+        rc, out = run_command(cmd, overall_timeout_s=PING_TIMEOUT_S * (PING_COUNT + 1))
+        metrics = parse_ping_output(out, flavor)
+        #TEMP
+        print("PARSED:", metrics)
 
         reachable = (rc == 0) and (metrics["packet_loss_pct"] is not None) and (metrics["packet_loss_pct"] < 100.0)
 
