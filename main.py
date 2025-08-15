@@ -174,7 +174,16 @@ def parse_ping_output(text: str, flavor: str) -> Dict[str, Any]:
     # HINT (Windows): look for:
     #   'Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)'
     #   'Minimum = 10ms, Maximum = 30ms, Average = 20ms'
-    return {
+
+    import re
+
+    UNIX_PACKETS_PATTERN = r"(\d+)\s+packets transmitted,\s+(\d+)\s+received.*?(\d+)%\s+packet loss"
+    UNIX_RTT_PATTERN = r"=\s*([0-9.]+)/([0-9.]+)/([0-9.]+)/([0-9.]+)\s*ms"
+    
+    WINDOWS_PACKETS_PATTERN = r"Sent\s*=\s*(\d+),\s*Received\s*=\s*(\d+),\s*Lost\s*=\s*\d+\s*\((\d+)%\s*loss\)"
+    WINDOWS_TIMES_PATTERN = r"Minimum\s*=\s*(\d+)ms,\s*Maximum\s*=\s*(\d+)ms,\s*Average\s*=\s*(\d+)ms"
+
+    result = {
         "packets_sent": None,
         "packets_received": None,
         "packet_loss_pct": None,
@@ -182,6 +191,40 @@ def parse_ping_output(text: str, flavor: str) -> Dict[str, Any]:
         "avg_ms": None,
         "max_ms": None,
     }
+
+    text = (text or "").strip()
+
+    print(f"Ping Output: {text}")
+
+    if flavor == "windows":
+        msg = re.search(WINDOWS_PACKETS_PATTERN, text, flags=re.I)
+        if msg:
+            result["packets_sent"] = int(msg.group(1))
+            result["packets_received"] = int(msg.group(2))
+            result["packet_loss_pct"] = float(msg.group(3))
+        
+        msg2 = re.search(WINDOWS_TIMES_PATTERN, text, flags=re.I)
+        if msg2:
+            result["min_ms"] = float(msg2.group(1))
+            result["max_ms"] = float(msg2.group(2))
+            result["avg_ms"] = float(msg2.group(3))
+            
+
+    else:
+        msg = re.search(UNIX_PACKETS_PATTERN, text)
+        if msg:
+            result["packets_sent"] = int(msg.group(1))
+            result["packets_received"] = int(msg.group(2))
+            result["packet_loss_pct"] = float(msg.group(3))
+        
+        msg2 = re.search(UNIX_RTT_PATTERN, text)
+        if msg2:
+            result["min_ms"] = float(msg2.group(1))
+            result["avg_ms"] = float(msg2.group(2))
+            result["max_ms"] = float(msg2.group(3))
+
+    return result
+
 
 
 # ========== TODO-6 (M6): Print a simple table ==========
