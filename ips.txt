@@ -1,10 +1,24 @@
-8.8.8.8
-1.1.1.1
-google.com
-cloudflare.com
-citrix.com
-github.com
-microsoft.com
-apple.com
-amazon.com
-facebook.com
+8.8.8.8                # Google DNS (reachable)
+1.1.1.1                # Cloudflare DNS (reachable)
+google.com             # Google (reachable)
+cloudflare.com         # Cloudflare (reachable)
+citrix.com             # Citrix (reachable)
+github.com             # GitHub (reachable)
+microsoft.com          # Microsoft (reachable)
+apple.com              # Apple (reachable)
+amazon.com             # Amazon (reachable)
+facebook.com           # Facebook (reachable)
+
+# Extra reachable domains
+openai.com             # OpenAI (reachable)
+netflix.com            # Netflix (reachable)
+yahoo.com              # Yahoo (reachable)
+duckduckgo.com         # DuckDuckGo (reachable)
+reddit.com             # Reddit (reachable)
+
+# Mostly unpingable domains
+example.nonexistent    # Invalid domain (unreachable)
+no-such-domain.test    # Reserved TLD (unreachable)
+usps.com               # Often blocks ICMP ping (unreachable)
+akamai.com             # Often blocks ICMP ping (unreachable)
+bankofamerica.com      # Financial site, ICMP usually blocked (unreachable)

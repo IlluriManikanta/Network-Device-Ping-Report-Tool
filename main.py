@@ -19,7 +19,7 @@ NOTE: You'll also create a new file 'ping_utils.py' in the same folder for step 
 from __future__ import annotations
 
 import os
-import sys
+import csv
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
@@ -36,8 +36,8 @@ def read_targets(path: str) -> List[str]:
     Return a list of non-empty, non-comment lines from the file.
     """
     targets: List[str] = []
-    with open(path, 'r') as input:
-        for line in input:
+    with open(path, 'r') as f:
+        for line in f:
             stripped = line.strip()
             if not stripped:
                 continue
@@ -103,10 +103,6 @@ def detect_os():
 
 # ========== TODO-3 (M3): Build ping command (move logic into ping_utils.py) ==========
 def build_ping_command(host: str, count: int, timeout_s: int) -> tuple[list[str], str]:
-    """
-    Temporary placeholder: you'll REPLACE this with an import from ping_utils.build_ping_cmd.
-    For now, return a list representing the command, e.g. ["ping", "-c", "4", host].
-    """
     # HINT: In ping_utils.py you'll detect OS via platform.system()
     # Windows uses: -n {count}, -w {timeout_ms}
     # macOS/Linux use: -c {count}, -W {timeout_s} (Linux) or similar
@@ -126,10 +122,7 @@ def build_ping_command(host: str, count: int, timeout_s: int) -> tuple[list[str]
 
 
 # ========== TODO-4 (M4): Execute ping ==========
-def run_command(cmd: list, overall_timeout_s: int) -> tuple[int, str]:
-    """
-    Run the command and return (returncode, combined_output).
-    """
+def run_command(cmd: list[str], overall_timeout_s: int) -> tuple[int, str]:
     import subprocess
     try:
         # TODO-4: use subprocess.run(..., capture_output=True, text=True, timeout=overall_timeout_s)
@@ -138,7 +131,7 @@ def run_command(cmd: list, overall_timeout_s: int) -> tuple[int, str]:
             return 126, "BAD_CMD_TYPE"
     
   
-        if not all(isinstance(item), str) for item in cmd):
+        if not all(isinstance(item, str) for item in cmd):
             return 126, "BAD_CMD_ELEM"
         
 
@@ -150,7 +143,7 @@ def run_command(cmd: list, overall_timeout_s: int) -> tuple[int, str]:
         # print(f"STDERR first 200 {result.stderr[:200]}")
 
         
-        combined_output = result.stdout + "\n" + result.stderr
+        combined_output = (result.stdout or "") + "\n" + (result.stderr or "")
 
         return result.returncode, combined_output.strip()
     
@@ -163,11 +156,7 @@ def run_command(cmd: list, overall_timeout_s: int) -> tuple[int, str]:
 
 # ========== TODO-5 (M5): Parse ping output ==========
 def parse_ping_output(text: str, flavor: str) -> Dict[str, Any]:
-    """
-    Extract packets sent/received/loss% and min/avg/max ms.
-    'flavor' is either 'unix' or 'windows' (decide in ping_utils later).
-    For now, return a dict with None placeholders so later steps can wire through.
-    """
+
     # HINT (Unix): look for lines like:
     #   '4 packets transmitted, 4 received, 0% packet loss'
     #   'round-trip min/avg/max/stddev = 12.3/21.5/30.7/3.2 ms'
@@ -193,8 +182,8 @@ def parse_ping_output(text: str, flavor: str) -> Dict[str, Any]:
     }
 
     text = (text or "").strip()
-
-    print(f"Ping Output: {text}")
+    #TEMP
+    #print(f"Ping Output: {text}")
 
     if flavor == "windows":
         msg = re.search(WINDOWS_PACKETS_PATTERN, text, flags=re.I)
@@ -236,12 +225,38 @@ def print_row(host: str, ip: Optional[str], reachable: bool, loss: Optional[floa
 
 # ========== TODO-7 (M7): Write CSV ==========
 def write_csv(rows: List[Dict[str, Any]], out_dir: str) -> str:
+    
+ # TODO-7: write rows as CSV using csv.DictWriter
+
     os.makedirs(out_dir, exist_ok=True)
     ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     out_path = os.path.join(out_dir, f"report_{ts}.csv")
-    # TODO-7: write rows as CSV using csv.DictWriter
-    # fields to include:
-    # ["timestamp","host","resolved_ip","reachable","packets_sent","packets_received","packet_loss_pct","avg_ms","min_ms","max_ms"]
+   
+    field_names = [
+        "timestamp",
+        "host",
+        "resolved_ip",
+        "reachable",
+        "packets_sent",
+        "packets_received",
+        "packet_loss_pct",
+        "avg_ms",
+        "min_ms",
+        "max_ms",
+    ]
+    with open(out_path, 'w', newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=field_names)
+        writer.writeheader()
+
+        for row in rows:
+
+            copy_of_row = row.copy() # copy of row so we dont mess original row in memory
+
+            for key in ("packet_loss_pct", "avg_ms", "min_ms", "max_ms"):
+                if copy_of_row[key] is None:
+                    copy_of_row[key] = ""
+            writer.writerow(copy_of_row)
+        
     return out_path
 
 
@@ -265,9 +280,9 @@ def main() -> None:
         rc, out = run_command(cmd, overall_timeout_s=PING_TIMEOUT_S * (PING_COUNT + 1))
         metrics = parse_ping_output(out, flavor)
         #TEMP
-        print("PARSED:", metrics)
+        # print("PARSED:", metrics)
 
-        reachable = (rc == 0) and (metrics["packet_loss_pct"] is not None) and (metrics["packet_loss_pct"] < 100.0)
+        reachable = ((metrics["packet_loss_pct"] is not None and metrics["packet_loss_pct"] < 100.0) or (metrics["packets_received"] is not None and metrics["packets_received"] > 0))
 
         print_row(
             host=host,
