@@ -18,7 +18,6 @@ This is useful for quickly testing network availability, DNS resolution, and lat
 ---
 
 ## Example Usage
-1. Add IPs or domains to `ips.txt` (one per line).
-2. Run:
+1. Run:
    ```bash
    python3 main.py
